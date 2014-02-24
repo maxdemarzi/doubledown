@@ -11,7 +11,9 @@ import scala.util.Random
 class TestNodeCreation extends Simulation {
   val httpConf = httpConfig
     //.baseURL("http://localhost:7474/db/data")
-    .baseURL("http://ec2-54-81-38-151.compute-1.amazonaws.com:7474/db/data")
+    //.baseURL("http://ec2-50-16-149-207.compute-1.amazonaws.com:7474/db/data") // medium
+    .baseURL("http://ec2-54-204-105-107.compute-1.amazonaws.com:7474/db/data")  // xlarge
+    //.baseURL("http://54.205.124.234:7474/db/data")        // 2xl
     .acceptHeader("application/json")
     // Uncomment to see Requests
     //    .requestInfoExtractor(request => {
@@ -139,9 +141,23 @@ class TestNodeCreation extends Simulation {
       .pause(0 milliseconds, 1 milliseconds)
   }
 
+
+  val scn9 = scenario("Test Neo4j Node Creation using Merge with Parameters")
+    .during(60) {
+    exec(chooseRandomId).
+      exec(
+        http("Post Create Via Cypher Merge Parameterized")
+          .post("/cypher")
+          .body("""{"query": "MERGE (n:User { id : %s })"}""".format("${id}"))
+          .check(status.is(200))
+      )
+      .pause(0 milliseconds, 1 milliseconds)
+  }
+
+
   setUp(
     initialize.users(1).protocolConfig(httpConf)
-    ,scn.users(20).protocolConfig(httpConf)
+    //,scn.users(20).protocolConfig(httpConf)
     //,scn2.users(20).protocolConfig(httpConf)
     //,scn3.users(20).protocolConfig(httpConf)
     //,scn4.users(20).protocolConfig(httpConf)
@@ -149,5 +165,6 @@ class TestNodeCreation extends Simulation {
     //,scn6.users(20).protocolConfig(httpConf)
     //,scn7.users(20).protocolConfig(httpConf)
     //,scn8.users(20).protocolConfig(httpConf)
+    ,scn9.users(20).protocolConfig(httpConf)
   )
 }
